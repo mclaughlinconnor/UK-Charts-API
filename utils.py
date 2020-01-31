@@ -1,5 +1,6 @@
 from datetime import date, timedelta
-from typing import List
+from typing import List, Tuple
+import sqlite3
 
 
 class Utils:
@@ -22,3 +23,19 @@ class Utils:
             if d.year != year:
                 break
         return dates
+
+    @staticmethod
+    def open_db(file_name: str) -> Tuple[sqlite3.Cursor, sqlite3.Connection]:
+        """Opens a DB and returns the cursor and connection
+
+        Arguments:
+            file_name {str} -- The filename to be opened
+
+        Returns:
+            Tuple[sqlite3.Cursor, sqlite3.Connection] -- A tuple of the cursor and the connection
+        """
+        db = sqlite3.connect(file_name)  # Creates/opens db
+        db.row_factory = sqlite3.Row
+        cursor = db.cursor()
+
+        return cursor, db
