@@ -1,9 +1,10 @@
-from datetime import date, timedelta
-from typing import List, Tuple, Optional
 import sqlite3
-from requests.packages.urllib3.util.retry import Retry
+from datetime import date, timedelta
+from typing import List, Optional, Tuple
+
 import requests
 from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 
 class Utils:
@@ -61,7 +62,7 @@ class Utils:
                 urllib3.util.html#module-urllib3.util.retry) (default: {0.3})
             status_forcelist {Tuple[int, int, int]} -- Status codes to force a rety for (default: {(500, 502, 504)})
             session {Optional[requests.Session]} -- The session to use, if none is specified, a new one will be created
-                 (default: {None})
+                (default: {None})
 
         Returns:
             requests.Session -- [description]
