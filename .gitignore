@@ -139,3 +139,6 @@ dmypy.json
 *.db*
 *.sql
 *.csv
+
+# Black config
+.black_config
