@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -26,28 +26,20 @@ def generate_dates(year: int) -> List[str]:
     return dates
 
 
+def dict_rename(data: Dict[str, Any], rename: Dict[str, Any]) -> Dict[str, Any]:
+    for original, new in rename.items():
+        data[new] = data[original]
+        data.pop(original)
+
+    return data
+
+
 def requests_retry_session(
     retries: int = 3,
     backoff_factor: float = 0.3,
     status_forcelist: Tuple[int, int, int] = (500, 502, 504),
     session: Optional[requests.Session] = None,
 ) -> requests.Session:
-    """Retrys a requests action a number of times
-
-    Usage:
-        req = requests_retry_session().get(url, stream=True)
-
-    Keyword Arguments:
-        retries {int} -- The number of times to retry (default: {3})
-        backoff_factor {float} -- Time between retrys (see: https://urllib3.readthedocs.io/en/latest/reference/
-            urllib3.util.html#module-urllib3.util.retry) (default: {0.3})
-        status_forcelist {Tuple[int, int, int]} -- Status codes to force a rety for (default: {(500, 502, 504)})
-        session {Optional[requests.Session]} -- The session to use, if none is specified, a new one will be created
-            (default: {None})
-
-    Returns:
-        requests.Session -- [description]
-    """
     session = session or requests.Session()
     retry = Retry(
         total=retries, read=retries, connect=retries, backoff_factor=backoff_factor, status_forcelist=status_forcelist,
