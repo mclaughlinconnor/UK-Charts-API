@@ -158,3 +158,18 @@ class Deezer:
             self.id: int = data["id"]
             self.name: str = data["name"]
             self.picture = data["picture"]
+
+
+class ChartData:
+    def __init__(self, data: Dict[str, Any]):
+        self.title = data["title"]
+        self.artist = data["artist"]
+        self.position = data["position"]
+        self.last_week = data["last_week"]
+        self.label = data["label"]
+        self.peak = data["peak"]
+        self.woc = data["woc"]
+
+    def set_stream_urls(self, deezer_id: str, spotify_id: str) -> None:
+        self.deezer_id: str = deezer_id
+        self.spotify_id: str = spotify_id
