@@ -1,6 +1,8 @@
 import datetime
-from typing import Dict, Any, List
-from utils import dict_rename
+from typing import Dict, Any, List, Optional
+from utils import dict_rename, read_arl
+
+from deezer import Deezer as deezer
 
 
 class Deezer:
@@ -175,3 +177,9 @@ class ChartData:
             self.deezer_id: str = deezer_id
         if spotify_id is not None:
             self.spotify_id: str = spotify_id
+
+    def to_deezer(self) -> Optional[deezer]:
+        try:
+            return deezer(read_arl("arl.txt"), self.deezer_id)
+        except NameError:
+            raise ValueError(f"No deezer id for song {self.title} by {self.artist}")
