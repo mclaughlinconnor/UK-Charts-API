@@ -142,3 +142,6 @@ dmypy.json
 
 # Black config
 .black_config
+
+# Logins
+arl.txt

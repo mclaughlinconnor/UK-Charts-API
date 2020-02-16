@@ -34,6 +34,12 @@ def dict_rename(data: Dict[str, Any], rename: Dict[str, Any]) -> Dict[str, Any]:
     return data
 
 
+def read_arl(filename: str) -> str:
+    with open(filename) as file:
+        arl = file.readlines()[0].strip()
+        return arl
+
+
 def requests_retry_session(
     retries: int = 3,
     backoff_factor: float = 0.3,
