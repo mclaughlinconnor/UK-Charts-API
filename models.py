@@ -171,5 +171,7 @@ class ChartData:
         self.woc = data["woc"]
 
     def set_stream_urls(self, deezer_id: str, spotify_id: str) -> None:
-        self.deezer_id: str = deezer_id
-        self.spotify_id: str = spotify_id
+        if deezer_id is not None:
+            self.deezer_id: str = deezer_id
+        if spotify_id is not None:
+            self.spotify_id: str = spotify_id

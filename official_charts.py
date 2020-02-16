@@ -4,7 +4,6 @@ from typing import Dict, List, Optional, Tuple, Union, Generator
 import requests
 from bs4 import BeautifulSoup as bs
 import bs4
-from tqdm import tqdm
 
 import models
 
@@ -18,7 +17,7 @@ class Scraper:
         self.chart_url = self._chart_url(self.chart_title, self.chart_date, self.chart_id)
 
     def scrape(self) -> Generator[models.ChartData, None, None]:
-        soup: bs = self.download_webpage(self.chart_url)
+        soup: bs = self._download_webpage(self.chart_url)
 
         rows: List[bs4.element.Tag]
         data_table: bs4.element.Tag
@@ -26,14 +25,17 @@ class Scraper:
         for row in rows:
             if self._is_advertisement(row):
                 continue
-            chart_data = self.extract_data(row)
+
+            chart_data = self._extract_metadata(row)
             stream_links = self._extract_stream_links(row, data_table)
+
             for link in stream_links:
-                is_deezer_id = self._is_deezer_id(link)
-                if is_deezer_id is not None and is_deezer_id:
+                provider = self._streaming_provider(link)
+                if provider == "deezer":
                     deezer_stream_url = link
-                if is_deezer_id is not None and not is_deezer_id:
+                elif provider == "spotify":
                     spotify_stream_url = link
+
             chart_data.set_stream_urls(deezer_stream_url, spotify_stream_url)
             yield chart_data
 
@@ -53,7 +55,7 @@ class Scraper:
 
         return chart_url
 
-    def download_webpage(self, url: str) -> bs:
+    def _download_webpage(self, url: str) -> bs:
         page = requests.get(url)  # DLs the chart page
         soup = bs(page.content, "html.parser")  # Initialises into BS4
 
@@ -89,18 +91,18 @@ class Scraper:
 
         return stream_links
 
-    def _is_deezer_id(self, link: str) -> Optional[bool]:
+    def _streaming_provider(self, link: str) -> Optional[str]:
         if "deezer" in link:
-            return True
+            return "deezer"
         elif "spotify" in link:
-            return False
+            return "spotify"
         else:
             return None
 
-    def add_stream_links_to_object(self, chart_data: models.ChartData, deezer: str, spotify: str) -> None:
+    def _add_stream_links_to_object(self, chart_data: models.ChartData, deezer: str, spotify: str) -> None:
         chart_data.set_stream_urls(deezer, spotify)
 
-    def extract_data(self, row: bs4.element.Tag) -> models.ChartData:
+    def _extract_metadata(self, row: bs4.element.Tag) -> models.ChartData:
         row_data: Dict[str, Union[str, int]] = {}
 
         row_data["title"] = row.find(class_="title").find("a").get_text()
@@ -112,10 +114,3 @@ class Scraper:
         row_data["woc"] = row.find_all("td", recursive=False)[4].get_text()
 
         return models.ChartData(row_data)
-
-
-if __name__ == "__main__":
-    scraper = Scraper(datetime.datetime.strptime("20021112", "%Y%m%d"), "singles-chart")
-    i: models.ChartData
-    for chart_data in tqdm(scraper.scrape()):
-        print(chart_data.deezer_id)
