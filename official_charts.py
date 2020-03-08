@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 import bs4
 
-import models
+from models import chart
 
 
 class Scraper:
@@ -16,7 +16,7 @@ class Scraper:
         self.chart_date = date.strftime("%Y%m%d")
         self.chart_url = self._chart_url(self.chart_title, self.chart_date, self.chart_id)
 
-    def scrape(self) -> Generator[models.ChartData, None, None]:
+    def scrape(self) -> Generator[chart.ChartData, None, None]:
         soup: bs = self._download_webpage(self.chart_url)
 
         rows: List[bs4.element.Tag]
@@ -99,10 +99,10 @@ class Scraper:
         else:
             return None
 
-    def _add_stream_links_to_object(self, chart_data: models.ChartData, deezer: str, spotify: str) -> None:
+    def _add_stream_links_to_object(self, chart_data: chart.ChartData, deezer: str, spotify: str) -> None:
         chart_data.set_stream_urls(deezer, spotify)
 
-    def _extract_metadata(self, row: bs4.element.Tag) -> models.ChartData:
+    def _extract_metadata(self, row: bs4.element.Tag) -> chart.ChartData:
         row_data: Dict[str, Union[str, int]] = {}
 
         row_data["title"] = row.find(class_="title").find("a").get_text()
@@ -113,4 +113,4 @@ class Scraper:
         row_data["peak"] = row.find_all("td", recursive=False)[3].get_text()
         row_data["woc"] = row.find_all("td", recursive=False)[4].get_text()
 
-        return models.ChartData(row_data)
+        return chart.ChartData(row_data)

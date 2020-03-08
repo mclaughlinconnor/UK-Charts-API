@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 import requests
 
-import models
+from models import deezer
 from utils import requests_retry_session
 
 
@@ -95,7 +95,7 @@ class Deezer:
 
         return resp.json()
 
-    def get_track_data(self) -> models.Deezer.Track:
+    def get_track_data(self) -> deezer.Track:
 
         track_data = self._perform_request(Endpoints.track(self.track_id))
 
@@ -109,17 +109,17 @@ class Deezer:
         data["artist"] = artist_data
         data["album"] = album_data
 
-        return models.Deezer.Track(data, net_req=True)
+        return deezer.Track(data, net_req=True)
 
-    def get_album_data(self) -> models.Deezer.Album:
+    def get_album_data(self) -> deezer.Album:
         album_data = self._perform_request(Endpoints.album(self.album_id))
 
-        return models.Deezer.Album(album_data, net_req=True)
+        return deezer.Album(album_data, net_req=True)
 
-    def get_contibutor_data(self, contibutor_id: str) -> models.Deezer.Contributor:
+    def get_contibutor_data(self, contibutor_id: str) -> deezer.Contributor:
         contributor_data = self._perform_request(Endpoints.contributor(contibutor_id))
 
-        return models.Deezer.Contributor(contributor_data, net_req=True)
+        return deezer.Contributor(contributor_data, net_req=True)
 
     def get_lyrics(self, synced: bool = False) -> list:
         if synced:
