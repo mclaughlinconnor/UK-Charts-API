@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
 from deezer import Deezer
-from utils import read_arl
+from utils import read_arl, url_to_deezer_id
 
 
 class ChartData:
@@ -22,6 +22,6 @@ class ChartData:
 
     def to_deezer(self) -> Optional[Deezer]:
         try:
-            return Deezer(read_arl("arl.txt"), self.deezer_id)
+            return Deezer(read_arl("arl.txt"), url_to_deezer_id(self.deezer_id))
         except NameError:
             raise ValueError(f"No deezer id for song {self.title} by {self.artist}")

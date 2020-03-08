@@ -54,3 +54,7 @@ def requests_retry_session(
     session.mount("http://", adapter)
     session.mount("https://", adapter)
     return session
+
+
+def url_to_deezer_id(url: str) -> str:
+    return url.split("/")[-1]
