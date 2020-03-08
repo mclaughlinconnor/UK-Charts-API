@@ -140,11 +140,6 @@ class Lyrics:
         return self._lyric_data
 
     def unsynced_lyrics(self) -> list:
-        """ Recieves (timestamped) lyrics from the unofficial api
-            and converts them to a conventional .lrc file.
-            If only the unsynced lyrics are found, these are written
-            to a .txt file.
-        """
         if self._lyric_data == {}:
             data = self._lyrics_request()
         else:
@@ -156,11 +151,6 @@ class Lyrics:
             return []
 
     def synced_lyrics(self) -> list:
-        """ Recieves (timestamped) lyrics from the unofficial api
-            and converts them to a conventional .lrc file.
-            If only the unsynced lyrics are found, these are written
-            to a .txt file.
-        """
         if self._lyric_data == {}:
             data = self._lyrics_request()
         else:
