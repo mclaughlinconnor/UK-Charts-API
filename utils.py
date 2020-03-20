@@ -40,6 +40,12 @@ def read_arl(filename: str) -> str:
         return arl
 
 
+def read_acoustid(filename: str) -> str:
+    with open(filename) as file:
+        key = file.readlines()[0].strip()
+        return key
+
+
 def requests_retry_session(
     retries: int = 3,
     backoff_factor: float = 0.3,
