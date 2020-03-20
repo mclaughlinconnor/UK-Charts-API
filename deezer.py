@@ -38,6 +38,9 @@ class Deezer:
         self._get_tokens()
         self.track_id = track_id
         self.lyrics = Lyrics(track_id, self)
+        self.track_data: deezer.Track
+        self.album_data: deezer.Album
+        self.artist_data: deezer.Contributor
 
     def _setup_session(self) -> None:
         self.session = requests.Session()
@@ -95,29 +98,34 @@ class Deezer:
 
         return resp.json()
 
-    def get_track_data(self) -> deezer.Track:
+    @property
+    def track(self) -> deezer.Track:
+        if self.track_data is not None:
+            self.track_data = self._perform_request(Endpoints.track(self.track_id))
 
-        track_data = self._perform_request(Endpoints.track(self.track_id))
+            self.album_id = self.track_data["album"]["id"]
+            self.album_data = self.album
 
-        self.album_id = track_data["album"]["id"]
-        album_data = self.get_album_data()
+            self.artist_id = self.track_data["artist"]["id"]
+            self.artist_data = self.contributor()
 
-        self.artist_id = track_data["artist"]["id"]
-        artist_data = self.get_contibutor_data(self.artist_id)
-
-        data = track_data
-        data["artist"] = artist_data
-        data["album"] = album_data
+        data = self.track_data
+        data["artist"] = self.artist_data
+        data["album"] = self.album_data
 
         return deezer.Track(data, net_req=True)
 
-    def get_album_data(self) -> deezer.Album:
-        album_data = self._perform_request(Endpoints.album(self.album_id))
+    @property
+    def album(self) -> deezer.Album:
+        if self.album_data is not None:
+            self.album_data = self._perform_request(Endpoints.album(self.album_id))
 
-        return deezer.Album(album_data, net_req=True)
+        return deezer.Album(self.album_data, net_req=True)
 
-    def get_contibutor_data(self, contibutor_id: str) -> deezer.Contributor:
-        contributor_data = self._perform_request(Endpoints.contributor(contibutor_id))
+    @property
+    def contributor(self) -> deezer.Contributor:
+        if self.artist_data is not None:
+            contributor_data = self._perform_request(Endpoints.contributor(self.artist_id))
 
         return deezer.Contributor(contributor_data, net_req=True)
 
