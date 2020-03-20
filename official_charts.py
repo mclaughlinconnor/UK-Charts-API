@@ -5,7 +5,9 @@ import requests
 from bs4 import BeautifulSoup as bs
 import bs4
 
+from db import Db
 from models import chart
+from sql import Insert
 
 
 class Scraper:
@@ -16,7 +18,10 @@ class Scraper:
         self.chart_date = date.strftime("%Y%m%d")
         self.chart_url = self._chart_url(self.chart_title, self.chart_date, self.chart_id)
 
-    def scrape(self) -> Generator[chart.ChartData, None, None]:
+    def write_record(self, database: Db) -> None:
+        database.insert(Insert.CHARTDATA, ())
+
+    def scrape(self) -> Generator[chart.ChartSong, None, None]:
         soup: bs = self._download_webpage(self.chart_url)
 
         rows: List[bs4.element.Tag]
@@ -26,7 +31,7 @@ class Scraper:
             if self._is_advertisement(row):
                 continue
 
-            chart_data = self._extract_metadata(row)
+            chart_song = self._extract_chartsong_metadata(row)
             stream_links = self._extract_stream_links(row, data_table)
 
             for link in stream_links:
@@ -36,7 +41,9 @@ class Scraper:
                 elif provider == "spotify":
                     spotify_stream_url = link
 
-            chart_data.set_stream_urls(deezer_stream_url, spotify_stream_url)
+            chart_song.set_stream_urls(deezer_stream_url, spotify_stream_url)
+
+            chart_data = self._extract_chartdata_metadata(row, chart_song)
             yield chart_data
 
     def _chart_id_from_type(self, chart_id: str) -> str:
@@ -102,15 +109,29 @@ class Scraper:
     def _add_stream_links_to_object(self, chart_data: chart.ChartData, deezer: str, spotify: str) -> None:
         chart_data.set_stream_urls(deezer, spotify)
 
-    def _extract_metadata(self, row: bs4.element.Tag) -> chart.ChartData:
+    def _extract_chartsong_metadata(self, row: bs4.element.Tag) -> chart.ChartSong:
         row_data: Dict[str, Union[str, int]] = {}
 
         row_data["title"] = row.find(class_="title").find("a").get_text()
         row_data["artist"] = row.find(class_="artist").find("a").get_text()
-        row_data["position"] = row.find(class_="position").get_text()
-        row_data["last_week"] = row.find(class_="last-week").get_text().strip()
         row_data["label"] = row.find(class_="label").get_text()
         row_data["peak"] = row.find_all("td", recursive=False)[3].get_text()
         row_data["woc"] = row.find_all("td", recursive=False)[4].get_text()
+
+        return chart.ChartSong(row_data)
+
+    def _extract_chartdata_metadata(self, row: bs4.element.Tag, chart_song: chart.ChartSong) -> chart.ChartData:
+        # Make some way to have a ChartSong in here in the parameters
+        row_data: Dict[str, Union[str, int]] = {}
+
+        row_data["chart_id"] = self.chart_id
+        row_data["chart_title"] = self.chart_title
+        row_data["chart_song"] = chart_song
+        row_data["position"] = row.find(class_="position").get_text()
+        row_data["date"] = self.chart_date
+        row_data["chart_url"] = self.chart_url
+        row_data["last_week"] = row.find(class_="last-week").get_text().strip()
+
+        # Make sure these corruspond with the ones in ChartData
 
         return chart.ChartData(row_data)
