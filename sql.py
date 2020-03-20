@@ -1,8 +1,8 @@
 class Insert:
-    CHART = """
-        INSERT INTO 'Chart' (
+    CHARTDATA = """
+        INSERT INTO 'ChartData' (
             ChartID,
-            ChartType,
+            ChartTitle,
             SongID,
             Position,
             Date,
@@ -26,8 +26,10 @@ class Insert:
                        Artist,
                        Label,
                        WOC,
-                       PeakPos)
-                   VALUES (?, ?, ?, ?, ?, ?);"""
+                       PeakPos,
+                       DeezerID,
+                       SpotifyID)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?);"""
 
     METADATA = """INSERT INTO 'Metadata' (
                       ISRC,
