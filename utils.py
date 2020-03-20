@@ -62,5 +62,11 @@ def requests_retry_session(
     return session
 
 
+def sort_title(text: str) -> str:
+    text.lstrip("A ").lstrip("The ")
+
+    return text
+
+
 def url_to_deezer_id(url: str) -> str:
     return url.split("/")[-1]
