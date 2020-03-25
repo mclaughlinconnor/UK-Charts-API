@@ -110,6 +110,9 @@ class Picture:
 
         return picture_data
 
+    @property
+    def _url_prefix(self) -> str:
+        return "/".join(self.xl.split("/")[0:-1])
 
 class Album:
     def __init__(self, data: Dict[str, Any], net_req: bool = False):
