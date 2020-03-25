@@ -1,7 +1,7 @@
 import datetime
 from typing import Any, Dict, List
 
-from utils import dict_rename
+from utils import dict_rename, requests_retry_session
 
 
 class Track:
@@ -113,6 +113,15 @@ class Picture:
     @property
     def _url_prefix(self) -> str:
         return "/".join(self.xl.split("/")[0:-1])
+
+    def cover_art(self, size: int) -> bytes:
+        """ Retrieves the cover art/playlist image from the official API,
+            downloads and returns it.
+        """
+        url = f"{self._url_prefix}/{size}x{size}.png"
+        r = requests_retry_session().get(url)
+        return r.content
+
 
 class Album:
     def __init__(self, data: Dict[str, Any], net_req: bool = False):
