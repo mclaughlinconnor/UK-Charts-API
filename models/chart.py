@@ -13,16 +13,18 @@ class ChartSong:
         self.label = data["label"]
         self.woc = data["woc"]
         self.peak = data["peak"]
+        self.deezer_id: str
+        self.spotify_id: str
 
     def set_stream_urls(self, deezer_id: str, spotify_id: str) -> None:
         if deezer_id is not None:
-            self.deezer_id: str = deezer_id
+            self.deezer_id = deezer_id
         if spotify_id is not None:
-            self.spotify_id: str = spotify_id
+            self.spotify_id = spotify_id
 
     def to_deezer(self) -> Optional[Deezer]:
         try:
-            return Deezer(read_arl("arl.txt"), url_to_deezer_id(self.deezer_id))
+            return Deezer(read_arl("arl.txt"), url_to_deezer_id(self.deezer_id), spotify_id=self.spotify_id)
         except NameError:
             raise ValueError(f"No deezer id for song {self.title} by {self.artist}")
 

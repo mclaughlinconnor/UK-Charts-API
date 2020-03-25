@@ -32,7 +32,7 @@ class Endpoints:
 
 
 class Deezer:
-    def __init__(self, arl: str, track_id: str) -> None:
+    def __init__(self, arl: str, track_id: str, spotify_url: str = None) -> None:
         self._setup_session()
         self._login_by_arl(arl)
         self._get_tokens()
@@ -41,6 +41,7 @@ class Deezer:
         self.track_data: deezer.Track
         self.album_data: deezer.Album
         self.artist_data: deezer.Contributor
+        self.spotify_url = spotify_url
 
     def _setup_session(self) -> None:
         self.session = requests.Session()
@@ -113,7 +114,7 @@ class Deezer:
         data["artist"] = self.artist_data
         data["album"] = self.album_data
 
-        return deezer.Track(data, net_req=True)
+        return deezer.Track(data, self.spotify_url, net_req=True)
 
     @property
     def album(self) -> deezer.Album:

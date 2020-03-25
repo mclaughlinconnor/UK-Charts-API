@@ -5,7 +5,7 @@ from utils import dict_rename
 
 
 class Track:
-    def __init__(self, data: Dict[str, Any], net_req: bool = False):
+    def __init__(self, data: Dict[str, Any], spotify_url: str = None, net_req: bool = False):
         if net_req:
             data = self._net_req_convert(data)
 
@@ -27,6 +27,7 @@ class Track:
         self.contributors: List[int] = data["contributors"]
         self.artist: Contributor = data["artist"]
         self.album: str = data["album"]
+        self.spotify_url: str = spotify_url
 
     def _net_req_convert(self, data: Dict[str, Any]) -> Dict[str, Any]:
         rename = {"id": "deezer_id", "preview": "preview_url"}
