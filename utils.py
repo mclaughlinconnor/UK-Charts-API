@@ -6,7 +6,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
-def generate_dates(year: int) -> List[str]:
+def generate_dates(year: int) -> List[date]:
     """[Generates a list of all the week beginings in year. Note: Weeks start on Sundays]
 
     Arguments:
@@ -19,7 +19,7 @@ def generate_dates(year: int) -> List[str]:
     d = date(year, 1, 1)  # January 1st
     d += timedelta(days=6 - d.weekday())  # First Sunday
     while d.year == year:
-        dates.append(d.strftime("%Y%m%d"))
+        dates.append(d)
         d += timedelta(days=7)
         if d.year != year:
             break
