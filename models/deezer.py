@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from utils import dict_rename, requests_retry_session
 
@@ -12,7 +12,6 @@ class Track:
         self.deezer_id: str = data["deezer_id"]
         self.title: str = data["title"]
         self.title_short: str = data["title_short"]
-        self.title_version: str = data["title_version"]
         self.isrc: str = data["isrc"]
         self.link: str = data["link"]
         self.duration: int = data["duration"]
@@ -28,6 +27,9 @@ class Track:
         self.artist: Contributor = data["artist"]
         self.album: str = data["album"]
         self.spotify_url: str = spotify_url
+
+        if "title_version" in data:
+            self.title_version: str = data["title_version"]
 
     def _net_req_convert(self, data: Dict[str, Any]) -> Dict[str, Any]:
         rename = {"id": "deezer_id", "preview": "preview_url"}
