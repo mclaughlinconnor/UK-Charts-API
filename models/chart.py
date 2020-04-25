@@ -24,7 +24,15 @@ class ChartSong:
 
     def to_deezer(self) -> Optional[Deezer]:
         try:
-            return Deezer(read_arl("arl.txt"), url_to_deezer_id(self.deezer_id), spotify_id=self.spotify_id)
+            initial_candidate = Deezer(
+                read_arl("arl.txt"), url_to_deezer_id(self.deezer_id), spotify_url=self.spotify_id
+            )
+            if initial_candidate.album.track_count == 1:
+                song = initial_candidate.popular_similar()
+            else:
+                song = initial_candidate
+            return song
+            # if initial_candidate.album.track_list
         except NameError:
             raise ValueError(f"No deezer id for song {self.title} by {self.artist}")
 
