@@ -26,15 +26,20 @@ from mutagen.id3 import (
 )
 from mutagen.mp3 import MP3
 import time
-from typing import Any
+from typing import Any, Optional
 from mb import Musicbrainz
 
 
 class Tag:
-    @staticmethod
-    def add_tag(f: MP3, tag: Any) -> None:
+    def __init__(self, filename: str, deezer: Deezer, ext: str) -> None:
+        self.filename = filename
+        self.deezer = deezer
+        self.ext = ext
+        self._tag()
+
+    def add_tag(self, f: MP3, tag: Any) -> None:
         try:
-            f.tags.add(f, tag)
+            f.tags.add(tag)
         except ValueError:
             return
 
@@ -43,15 +48,13 @@ class Tag:
 
         return [duration, fingerprint]
 
-    @staticmethod
     def _tag_mp3(self, filename: str, deezer: Deezer) -> None:
-        filename = f"{filename}.mp3"
         f = MP3()
 
         f.add_tags()
 
         duration, acoustid_fingerprint = self._calculate_acoustid_fingerprint(filename)
-        mb_ids = self._mb_id(deezer.artist_id, deezer.track.title)
+        mb_ids = self._mb_id(deezer.contributor.name, deezer.track.title)
 
         self.add_tag(f, TPUB(encoding=3, text=deezer.album.label))
         self.add_tag(f, TSOT(encoding=3, text=deezer.track.title))
@@ -59,15 +62,15 @@ class Tag:
         self.add_tag(f, TSOP(encoding=3, text=deezer.contributor.name))
         self.add_tag(f, TDEN(text=time.strftime("%d/%m/%Y %H:%M:%S")))
         self.add_tag(f, TIT2(encoding=3, text=deezer.track.title))
-        self.add_tag(f, TPOS(text=deezer.track.disk_number))
-        self.add_tag(f, TRCK(text=deezer.track.track_position))
-        self.add_tag(f, TDRL(text=deezer.album.release_date))
+        self.add_tag(f, TPOS(text=str(deezer.track.disk_number)))
+        self.add_tag(f, TRCK(text=str(deezer.track.track_position)))
+        self.add_tag(f, TDRL(text=deezer.album.id3v24_release_date))
         self.add_tag(f, TPE1(text=deezer.album.contributors))
         self.add_tag(f, TPE2(text=deezer.contributor.name))
-        self.add_tag(f, TBPM(text=deezer.track.bpm))
+        self.add_tag(f, TBPM(text=str(deezer.track.bpm)))
         self.add_tag(f, RVA2(desc="", channel=1, gain=deezer.track.gain))
         self.add_tag(f, USLT(text=deezer.lyrics.unsynced_lyrics()))
-        self.add_tag(f, TCON(text=deezer.album.genres))
+        self.add_tag(f, TCON(text=deezer.album.genre_list))
         self.add_tag(f, TXXX(text=deezer.album.upc, desc="upc"))
         self.add_tag(f, TALB(text=deezer.album.title))
         self.add_tag(f, WXXX(url=deezer.album.link, desc="album_deezer_url"))
@@ -87,29 +90,32 @@ class Tag:
         if mb_ids is not None:
             self.add_tag(f, TXXX(text=mb_ids["artist"], desc="musicbrainz_albumartistid"))
             self.add_tag(f, TXXX(text=mb_ids["album"], desc="musicbrainz_albumid"))
+            self.add_tag(f, TXXX(text=mb_ids["quality"], desc="musicbrainz_id_quality"))
 
         f.save(filename)
 
-    def _mb_id(self, artist, title, acid_fps):
-        mb = Musicbrainz(artist, title, acid_fps)
+    def _mb_id(self, artist: str, title: str) -> Optional[dict]:
+        mb = Musicbrainz(artist, title)
         primary = mb.primary_mb_release
 
-        try:
-            ar_id = primary["artsit-credit"][0]["artist"]["id"]
-            al_id = primary["id"]
-        except Exception as e:
-            print(e)
+        if primary is None:
             return None
 
-        data = {"artist": ar_id, "album": al_id}
+        try:
+            ar_id = primary["artist-credit"][0]["artist"]["id"]
+            al_id = primary["id"]
+            qual = primary["mb_type"]
+        except KeyError:  # There is somehow no artist or album id(?)
+            return None
+
+        data = {"artist": ar_id, "album": al_id, "quality": qual}
         return data
 
-    @staticmethod
-    def tag(filename: str, deezer: Deezer, ext: str) -> None:
+    def _tag(self) -> None:
         """ Function to write tags to the file, be it FLAC or MP3."""
         # retrieve tags
 
-        if ext == ".mp3":
-            Tag._tag_mp3(filename, deezer)
+        if self.ext == ".mp3":
+            self._tag_mp3(self.filename, self.deezer)
         else:
             raise NotImplementedError("Could not write tags. File extension not supported.")

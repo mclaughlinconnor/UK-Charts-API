@@ -147,10 +147,20 @@ class Album:
         self.explicit_content_cover: bool = data["explicit_content_cover"]
         self.contributors: List[int] = data["contributors"]
         self.artist: Contributor = data["artist"]
+        self.track_count: int = data["track_count"]
+
+    @property
+    def id3v24_release_date(self) -> str:
+        return self.release_date.strftime("%Y%m%d")
+
+    @property
+    def genre_list(self) -> List[str]:
+        genres = [genre.name for genre in self.genres]
+        return genres
 
     def _net_req_convert(self, data: Dict[str, Any]) -> Dict[str, Any]:
 
-        rename = {"tracklist": "track_list"}
+        rename = {"tracklist": "track_list", "nb_tracks": "track_count"}
         cover_keys = ["cover", "cover_small", "cover_medium", "cover_big", "cover_xl"]
 
         data["contributors"] = [contrib_data["id"] for contrib_data in data["contributors"]]
