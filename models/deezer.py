@@ -61,7 +61,6 @@ class Contributor:
     def __init__(self, data: Dict[str, Any], net_req: bool = False):
         if net_req:
             data = self._net_req_convert(data)
-
         self.id: int = data["id"]
         self.name: str = data["name"]
         self.link: str = data["link"]
