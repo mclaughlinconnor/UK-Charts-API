@@ -11,8 +11,8 @@ from sql import Insert
 
 
 class Scraper:
-    def __init__(self, date: datetime.datetime, chart_title: str):
-        self.date: datetime.datetime = date
+    def __init__(self, date: datetime.date, chart_title: str):
+        self.date: datetime.date = date
         self.chart_title: str = chart_title
         self.chart_id = self._chart_id_from_type(self.chart_title)
         self.chart_date = date.strftime("%Y%m%d")
@@ -21,7 +21,7 @@ class Scraper:
     def write_record(self, database: Db) -> None:
         database.insert(Insert.CHARTDATA, ())
 
-    def scrape(self) -> Generator[chart.ChartSong, None, None]:
+    def scrape(self) -> Generator[chart.ChartData, None, None]:
         soup: bs = self._download_webpage(self.chart_url)
 
         rows: List[bs4.element.Tag]
