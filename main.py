@@ -1,12 +1,16 @@
 from official_charts import Scraper
 import utils
-import download
+
+try:
+    import download
+except ImportError:
+    raise NotImplementedError("downloader.py not found. Add to support downloading.")
 from models import chart
 
 import multiprocessing
 
 
-MULTIPROCESS = True
+MULTIPROCESS = False
 
 
 def worker(chart_item: chart.ChartData) -> None:
