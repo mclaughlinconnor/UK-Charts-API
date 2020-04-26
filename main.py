@@ -14,11 +14,15 @@ MULTIPROCESS = False
 
 
 def worker(chart_item: chart.ChartData) -> None:
-    print("Start")
-    d = chart_item.chart_song.to_deezer()
-    dl = download.Download(d.track_id, f"/home/connor/Python/UK Charts API Refactor/output/{d.track_id}", d)
-    dl.download()
-    print(f"{chart_item.chart_song.title}: {d.track_id}")
+    print(f"{chart_item.chart_song.title} started.")
+    try:
+        d = chart_item.chart_song.to_deezer()
+        dl = download.Download(d.track_id, f"{d.generate_filepath('/home/connor/UK Charts API Refactor/output')}", d)
+        dl.download()
+    except ValueError:
+        print(f"{chart_item.chart_song.title} failed.")
+        # Logic for failed to_deezer calls here.
+        return
 
 
 if __name__ == "__main__":

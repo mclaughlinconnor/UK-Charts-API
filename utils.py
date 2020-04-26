@@ -70,3 +70,8 @@ def sort_title(text: str) -> str:
 
 def url_to_deezer_id(url: str) -> str:
     return url.split("/")[-1]
+
+
+def replace_illegals(text: str) -> str:
+    text.replace("/", "_")
+    return text

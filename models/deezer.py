@@ -5,9 +5,11 @@ from utils import dict_rename, requests_retry_session
 
 
 class Track:
-    def __init__(self, data: Dict[str, Any], spotify_url: str = None, net_req: bool = False):
+    def __init__(
+        self, data: Dict[str, Any], spotify_url: str = None, net_req: bool = False, skip_children: bool = False
+    ):
         if net_req:
-            data = self._net_req_convert(data)
+            data = self._net_req_convert(data, skip_children)
 
         self.deezer_id: str = data["deezer_id"]
         self.title: str = data["title"]
@@ -31,7 +33,7 @@ class Track:
         if "title_version" in data:
             self.title_version: str = data["title_version"]
 
-    def _net_req_convert(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _net_req_convert(self, data: Dict[str, Any], skip_children: bool = False) -> Dict[str, Any]:
         rename = {"id": "deezer_id", "preview": "preview_url"}
         remove = [
             "share",
@@ -49,10 +51,11 @@ class Track:
 
         data["contributors"] = [contrib_data["id"] for contrib_data in data["contributors"]]
 
-        if not isinstance(data["artist"], Contributor):
-            data["artist"] = Contributor(data["artist"])
-        if not isinstance(data["album"], Album):
-            data["album"] = Album(data["album"])
+        if not skip_children:
+            if not isinstance(data["artist"], Contributor):
+                data["artist"] = Contributor(data["artist"])
+            if not isinstance(data["album"], Album):
+                data["album"] = Album(data["album"])
 
         return data
 

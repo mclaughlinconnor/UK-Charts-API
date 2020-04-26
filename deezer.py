@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 import requests
 
@@ -34,6 +34,11 @@ class Endpoints:
 class Deezer:
     # Be careful when debugging this as VSCode's sidebar will call the @property methods
     def __init__(self, arl: str, track_id: str, spotify_url: str = None) -> None:
+        self.initialise_counter = 0
+        self.initialise(arl, track_id, spotify_url)
+
+    def initialise(self, arl: str, track_id: str, spotify_url: str = None) -> None:
+        self.initialise_counter += 1
         self.arl = arl
         self._setup_session()
         self._login_by_arl(self.arl)
@@ -42,7 +47,7 @@ class Deezer:
 
         self.lyrics = Lyrics(track_id, self)
 
-        self._raw_track_data: dict = self._perform_request(Endpoints.track(track_id))
+        self._raw_track_data: dict = self._request_wrapper(Endpoints.track(track_id))
 
         self._track_data: deezer.Track = None
         self._album_data: deezer.Album = None
@@ -103,37 +108,61 @@ class Deezer:
         self.csrf_token = req["checkForm"]
         self.sid_token = req["SESSION_ID"]
 
-    def _perform_request(self, end_point: str) -> Dict:
+    def _perform_request(self, end_point: str) -> Optional[Dict]:
         resp = requests_retry_session().get(end_point)
+        data = resp.json()
 
-        return resp.json()
+        if "error" in data:
+            return None
+
+        return data
+
+    def _request_wrapper(self, end_point: str) -> Optional[Dict]:
+        data = self._perform_request(end_point)
+        if not data:
+            if self.initialise_counter == 3:
+                raise ValueError(f"No deezer id for song {self.track_id}")
+            search_end_point = Endpoints.search(
+                {"track": self._get_track(children=False).title, "artist": self.contributor.name}
+            )
+            search_data = self._perform_request(search_end_point)
+            self.initialise(self.arl, search_data["data"][0]["id"], self.spotify_url)
+            data = self._request_wrapper(end_point)
+
+            return data
+
+        return data
 
     def popular_similar(self) -> "Deezer":
         # Use a string because Deezer isn't defined when Deezer is being defined.
-        endpoint = Endpoints.search({"track": self.track.title, "artist": self.contributor.name})
-        data = self._perform_request(endpoint)
+        search_end_point = Endpoints.search({"track": self.track.title, "artist": self.contributor.name})
+        data = self._request_wrapper(search_end_point)
         return Deezer(self.arl, data["data"][0]["id"], self.spotify_url)
 
-    @property
-    def track(self) -> deezer.Track:
+    def _get_track(self, children: bool = True) -> deezer.Track:
         if self._track_data is None:
-            raw_track_data = self._raw_track_data
+            if children:
+                self._artist_data = self.contributor
+                self._album_data = self.album
 
-            self._artist_data = self.contributor
-            self._album_data = self.album
+                data = self._raw_track_data
+                data["artist"] = self._artist_data
+                data["album"] = self._album_data
+                self._track_data = deezer.Track(data, self.spotify_url, net_req=True)
+            else:
+                data = self._raw_track_data
+                data["artist"] = {}
+                data["album"] = {}
 
-            data = raw_track_data
-            data["artist"] = self._artist_data
-            data["album"] = self._album_data
-
-            self._track_data = deezer.Track(data, self.spotify_url, net_req=True)
-
+                self._track_data = deezer.Track(data, self.spotify_url, net_req=True, skip_children=True)
         return self._track_data
+
+    track = property(_get_track)
 
     @property
     def album(self) -> deezer.Album:
         if self._album_data is None:
-            raw_album_data = self._perform_request(Endpoints.album(self.album_id))
+            raw_album_data = self._request_wrapper(Endpoints.album(self.album_id))
             self._album_data = deezer.Album(raw_album_data, net_req=True)
 
         return self._album_data
@@ -141,10 +170,14 @@ class Deezer:
     @property
     def contributor(self) -> deezer.Contributor:
         if self._artist_data is None:
-            raw_artist_data = self._perform_request(Endpoints.contributor(self.artist_id))
+            raw_artist_data = self._request_wrapper(Endpoints.contributor(self.artist_id))
             self._artist_data = deezer.Contributor(raw_artist_data, net_req=True)
 
         return self._artist_data
+
+    def generate_filepath(self, prefix: str) -> str:
+        filepath = f"{prefix}/{self.contributor.name}/{self.album.title}/{self.track.title_short}"
+        return filepath
 
     def get_lyrics(self, synced: bool = False) -> list:
         if synced:
