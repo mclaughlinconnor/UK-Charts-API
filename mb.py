@@ -67,6 +67,7 @@ class Musicbrainz:
             "secondary-type-list" not in release["release-group"]
             and "artist-credit-phrase" in release
             and release["artist-credit-phrase"] != "Various Artists"
+            and "date" in release
         ):
             # Having a secondary-type-list means it's a compilation or something else unwanted
             return "pristine"
