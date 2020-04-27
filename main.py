@@ -13,6 +13,7 @@ except ImportError:
 
 
 MULTIPROCESS = False
+TIMEOUT = 20
 
 
 def timeout_handler(signum: int, frame) -> None:  # type: ignore
@@ -22,7 +23,7 @@ def timeout_handler(signum: int, frame) -> None:  # type: ignore
 
 
 def worker(chart_item: chart.ChartData) -> None:
-    signal.alarm(20)
+    signal.alarm(TIMEOUT)
     logging.info(f"{chart_item.chart_song.title} started.")
     try:
         d = chart_item.chart_song.to_deezer()
