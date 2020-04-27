@@ -12,7 +12,7 @@ except ImportError:
     raise NotImplementedError("downloader.py not found. Add to support downloading.")
 
 
-MULTIPROCESS = True
+MULTIPROCESS = False
 
 
 def timeout_handler(signum: int, frame) -> None:  # type: ignore
@@ -22,17 +22,17 @@ def timeout_handler(signum: int, frame) -> None:  # type: ignore
 
 
 def worker(chart_item: chart.ChartData) -> None:
-    signal.alarm(1)
+    signal.alarm(20)
     logging.info(f"{chart_item.chart_song.title} started.")
     try:
         d = chart_item.chart_song.to_deezer()
         dl = download.Download(d.track_id, f"{d.generate_filepath('/home/connor/UK Charts API Refactor/output')}", d)
         dl.download()
     except ValueError:
-        logging.info(f"{chart_item.chart_song.title} failed.")
+        logging.error(f"{chart_item.chart_song.title} failed.")
         # Logic for failed to_deezer calls here.
     except exception.TimeoutException:
-        logging.info(f"{chart_item.chart_song.title} timed out.")
+        logging.warning(f"{chart_item.chart_song.title} timed out.")
     finally:
         signal.alarm(0)
         return
@@ -40,7 +40,7 @@ def worker(chart_item: chart.ChartData) -> None:
 
 if __name__ == "__main__":
     signal.signal(signal.SIGALRM, timeout_handler)
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.WARN)
     for year in range(1954, 2020):
         dates = utils.generate_dates(year)
         for date in dates:
