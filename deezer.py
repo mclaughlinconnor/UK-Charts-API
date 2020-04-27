@@ -3,7 +3,7 @@ from typing import Dict, Union, Optional
 import requests
 
 from models import deezer
-from utils import requests_retry_session
+from utils import requests_retry_session, replace_illegals
 
 
 class Endpoints:
@@ -176,7 +176,7 @@ class Deezer:
         return self._artist_data
 
     def generate_filepath(self, prefix: str) -> str:
-        filepath = f"{prefix}/{self.contributor.name}/{self.album.title}/{self.track.title_short}"
+        filepath = f"{prefix}/{self.contributor.name}/{replace_illegals(self.album.title)}/{replace_illegals(self.track.title_short)}"
         return filepath
 
     def get_lyrics(self, synced: bool = False) -> list:
