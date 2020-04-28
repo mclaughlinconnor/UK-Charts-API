@@ -188,4 +188,5 @@ class Genre:
     def __init__(self, data: Dict[str, Any]):
         self.id: int = data["id"]
         self.name: str = data["name"]
-        self.picture = data["picture"]
+        self.picture: Picture = data["picture"]
+
