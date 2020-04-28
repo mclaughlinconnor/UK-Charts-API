@@ -242,6 +242,10 @@ class Album:
         data["release_date"] = datetime.datetime.strptime(data["release_date"], "%Y-%m-%d")
         data["artist"] = Contributor(data["artist"], net_req=True)
 
+        artist_data = self._perform_request(Endpoints.contributor(data["artist"]["id"]))
+
+        data["artist"] = Contributor(artist_data, net_req=True)
+
         cover_data = {}
         for key in cover_keys:
             cover_data[key] = data[key]
@@ -252,6 +256,15 @@ class Album:
 
         # Means that a Track() doesn't reference an Album() that contains the same Track()
         data.pop("tracks")
+
+        return data
+
+    def _perform_request(self, end_point: str) -> Optional[Dict]:
+        resp = requests_retry_session().get(end_point)
+        data = resp.json()
+
+        if "error" in data:
+            return None
 
         return data
 
