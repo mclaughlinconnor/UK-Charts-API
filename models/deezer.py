@@ -299,6 +299,15 @@ class Genre:
 
         return data
 
+    def _perform_request(self, end_point: str) -> Optional[Dict]:
+        resp = requests_retry_session().get(end_point)
+        data = resp.json()
+
+        if "error" in data:
+            return None
+
+        return data
+
     def get_db_id(self, database: Db) -> int:
         if self.db_id is not None:
             return self.db_id
