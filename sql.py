@@ -6,7 +6,7 @@ class Insert:
             id,
             name,
             url,
-            date)
+            date
         VALUES (null, ?, ?, ?)
     )
     """
@@ -18,7 +18,6 @@ class Insert:
             height,
             url)
         VALUES (null, ?, ?, ?, ?)
-    )
     """
 
     audio_file = """INSERT INTO "audio_file" (
@@ -31,7 +30,6 @@ class Insert:
             channels,
             download_time)
         VALUES (null, ?, ?, ?, ?, ?, ?, ?)
-    )
     """
 
     photo = """INSERT INTO "photo" (
@@ -42,7 +40,6 @@ class Insert:
             big_id,
             xl_id)
         VALUES (null, ?, ?, ?, ?, ?)
-    )
     """
 
     chart_track = """INSERT INTO "chart_track" (
@@ -53,7 +50,6 @@ class Insert:
             last_week,
             peak)
         VALUES (null, ?, ?, ?, ?, ?, ?)
-    )
     """
 
     contributor = """INSERT INTO "contributor" (
@@ -64,7 +60,6 @@ class Insert:
             deezer_fans,
             photo_id)
         VALUES (null, ?, ?, ?, ?)
-    )
     """
 
     album = """INSERT INTO "album" (
@@ -78,15 +73,13 @@ class Insert:
             release_date,
             cover)
         VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?)
-    )
     """
 
     genre = """INSERT INTO "genre" (
             genre_id,
             name,
-            photo
+            photo)
         VALUES (null, ?, ?)
-    )
     """
 
     track = """INSERT INTO "track" (
@@ -94,9 +87,8 @@ class Insert:
             isrc,
             contributor_id,
             album_id,
-            audio_file_id
+            audio_file_id)
         VALUES (null, ?, ?, ?, ?)
-    )
     """
 
     track_metadata = """INSERT INTO "track_metadata" (
@@ -112,9 +104,8 @@ class Insert:
             bpm,
             deezer_preview,
             lyrics,
-            label
+            label)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    )
     """
 
 
