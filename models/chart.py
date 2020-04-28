@@ -41,7 +41,7 @@ class ChartSong:
 
     def write_record(self, database: Db) -> None:
         database.insert(
-            Insert.CHARTSONG,
+            Insert.chart_track,
             (self.title, self.artist, self.label, self.woc, self.peak, self.deezer_id, self.spotify_id),
         )
 
@@ -57,4 +57,4 @@ class ChartData:
         self.last_week = data["last_week"]
 
     def write_record(self, database: Db) -> None:
-        database.insert(Insert.CHARTDATA, (self.chart_id, self.chart_title, self.position, self.date, self.chart_url,))
+        database.insert(Insert.chart, (self.chart_title, self.chart_url, self.date))
