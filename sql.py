@@ -133,14 +133,14 @@ class Select:
 
 
 class Create:
-    chart = """CREATE TABLE "chart" (
+    chart = """CREATE TABLE IF NOT EXISTS "chart" (
         "chart_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "name"    TEXT NOT NULL,
         "url"    TEXT NOT NULL,
         "date"    TIMESTAMP NOT NULL
     )"""
 
-    image_file = """CREATE TABLE "image_file" (
+    image_file = """CREATE TABLE IF NOT EXISTS "image_file" (
         "image_file_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "filepath"    TEXT NOT NULL UNIQUE,
         "width"    INTEGER NOT NULL,
@@ -148,7 +148,7 @@ class Create:
         "url"    INTEGER NOT NULL
     )"""
 
-    audio_file = """CREATE TABLE "audio_file" (
+    audio_file = """CREATE TABLE IF NOT EXISTS "audio_file" (
         "audio_file_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "filepath"    TEXT NOT NULL UNIQUE,
         "format"    TEXT NOT NULL CHECK(format="mp3" or "flac"),
@@ -159,7 +159,7 @@ class Create:
         "download_time"    TIMESTAMP NOT NULL
     )"""
 
-    photo = """CREATE TABLE "photo" (
+    photo = """CREATE TABLE IF NOT EXISTS "photo" (
         "photo_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "thumbnail_id"    INTEGER,
         "small_id"    INTEGER,
@@ -173,7 +173,7 @@ class Create:
         FOREIGN KEY("thumbnail_id") REFERENCES "image_file"("image_file_id")
     )"""
 
-    chart_track = """CREATE TABLE "chart_track" (
+    chart_track = """CREATE TABLE IF NOT EXISTS "chart_track" (
         "chart_track_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "chart_id"    INTEGER NOT NULL,
         "track_id"    INTEGER,
@@ -184,7 +184,7 @@ class Create:
         FOREIGN KEY("track_id") REFERENCES "track"("track_id")
     )"""
 
-    contributor = """CREATE TABLE "contributor" (
+    contributor = """CREATE TABLE IF NOT EXISTS "contributor" (
         "contributor_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "deezer_id"    INTEGER UNIQUE,
         "spotify_id"    TEXT UNIQUE,
@@ -194,7 +194,7 @@ class Create:
         FOREIGN KEY("photo_id") REFERENCES "photo"("photo_id")
     )"""
 
-    album = """CREATE TABLE "album" (
+    album = """CREATE TABLE IF NOT EXISTS "album" (
         "album_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "deezer_id"    INTEGER UNIQUE,
         "spotify_id"    TEXT UNIQUE,
@@ -208,14 +208,14 @@ class Create:
         FOREIGN KEY("primary_contributor") REFERENCES "contributor"("contributor_id")
     )"""
 
-    genre = """CREATE TABLE "genre" (
+    genre = """CREATE TABLE IF NOT EXISTS "genre" (
         "genre_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "name"    TEXT,
         "photo"    INTEGER,
         FOREIGN KEY("photo") REFERENCES "genre"("genre_id")
     )"""
 
-    track = """CREATE TABLE "track" (
+    track = """CREATE TABLE IF NOT EXISTS "track" (
         "track_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "isrc"    TEXT NOT NULL UNIQUE,
         "contributor_id"    INTEGER NOT NULL,
@@ -226,7 +226,7 @@ class Create:
         FOREIGN KEY("isrc") REFERENCES "track_metadata"("isrc")
     )"""
 
-    track_metadata = """CREATE TABLE "track_metadata" (
+    track_metadata = """CREATE TABLE IF NOT EXISTS "track_metadata" (
         "isrc"    TEXT NOT NULL UNIQUE,
         "deezer_id"    INTEGER,
         "spotify_id"    INTEGER,

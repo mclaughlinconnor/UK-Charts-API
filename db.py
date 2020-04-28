@@ -8,6 +8,7 @@ class Db:
         self.conn: sqlite3.Connection = sqlite3.connect(file_name)  # Creates/opens db
         self.conn.row_factory = sqlite3.Row
         self.cursor: sqlite3.Cursor = self.conn.cursor()
+        self.create_tables()
 
     def commit(self) -> None:
         self.conn.commit()
