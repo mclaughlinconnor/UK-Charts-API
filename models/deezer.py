@@ -1,7 +1,9 @@
 import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
+from db import Db
 from endpoints import Endpoints
+from sql import Insert
 from utils import dict_rename, requests_retry_session
 
 
@@ -34,6 +36,8 @@ class Track:
         if "title_version" in data:
             self.title_version: str = data["title_version"]
 
+        self.db_id: Optional[int] = None
+
     def _net_req_convert(self, data: Dict[str, Any], skip_children: bool = False) -> Dict[str, Any]:
         rename = {"id": "deezer_id", "preview": "preview_url"}
         remove = [
@@ -60,6 +64,19 @@ class Track:
 
         return data
 
+    def get_db_id(self, database: Db) -> int:
+        if self.db_id is not None:
+            return self.db_id
+        else:
+            return self.write_record(database)
+
+    def write_record(self, database: Db) -> int:
+        database.insert(
+            Insert.track, (self.isrc, self.artist.get_db_id(database), self.album.get_db_id(database), None)
+        )
+        self.db_id = cast(int, database.cursor.lastrowid)
+        return self.db_id
+
 
 class Contributor:
     def __init__(self, data: Dict[str, Any], net_req: bool = False):
@@ -72,6 +89,8 @@ class Contributor:
         self.albums: int = data["albums"]
         self.fans: int = data["fans"]
         self.track_list: str = data["track_list"]
+
+        self.db_id: Optional[int] = None
 
     def _net_req_convert(self, data: Dict[str, Any]) -> Dict[str, Any]:
         removed = ["share", "radio", "type"]
@@ -88,17 +107,42 @@ class Contributor:
 
         return data
 
+    def get_db_id(self, database: Db) -> int:
+        if self.db_id is not None:
+            return self.db_id
+        else:
+            return self.write_record(database)
+
+    def write_record(self, database: Db) -> int:
+        database.insert(Insert.contributor, (self.id, None, self.name, self.fans, self.picture.get_db_id(database)))
+        self.db_id = cast(int, database.cursor.lastrowid)
+        return self.db_id
+
 
 class Picture:
     def __init__(self, data: Dict[str, Any], net_req: bool = False, prefix: str = "picture"):
         if net_req:
             data = self._net_req_convert(data, prefix)
 
-        self.thumbnail: str = data["thumbnail"]
-        self.small: str = data["small"]
-        self.medium: str = data["medium"]
-        self.big: str = data["big"]
-        self.xl: str = data["xl"]
+        self.thumbnail: dict = {}
+        self.small: dict = {}
+        self.medium: dict = {}
+        self.big: dict = {}
+        self.xl: dict = {}
+
+        self.thumbnail["size"] = [120, 120]
+        self.small["size"] = [56, 56]
+        self.medium["size"] = [250, 250]
+        self.big["size"] = [500, 500]
+        self.xl["size"] = [1000, 1000]
+
+        self.thumbnail["url"] = data["thumbnail"]
+        self.small["url"] = data["small"]
+        self.medium["url"] = data["medium"]
+        self.big["url"] = data["big"]
+        self.xl["url"] = data["xl"]
+
+        self.db_id: Optional[int] = None
 
     def _net_req_convert(self, data: Dict[str, Any], prefix: str = "picture") -> Dict[str, Any]:
         keys = {
@@ -127,6 +171,30 @@ class Picture:
         r = requests_retry_session().get(url)
         return r.content
 
+    def get_db_id(self, database: Db) -> int:
+        if self.db_id is not None:
+            return self.db_id
+        else:
+            return self.write_record(database)
+
+    def _write_image_file_record(self, database: Db, image: dict) -> int:
+        database.insert(Insert.image_file, (image["url"], image["size"][0], image["size"][1], True))
+        return database.cursor.lastrowid
+
+    def write_image_file(self, database: Db) -> None:
+        images = [self.thumbnail, self.small, self.medium, self.big, self.xl]
+        for i, image in enumerate(images):
+            images[i]["db_id"] = self._write_image_file_record(database, image)
+
+    def write_record(self, database: Db) -> int:
+        self.write_image_file(database)
+        database.insert(
+            Insert.photo,
+            (self.thumbnail["db_id"], self.small["db_id"], self.medium["db_id"], self.big["db_id"], self.xl["db_id"]),
+        )
+        self.db_id = cast(int, database.cursor.lastrowid)
+        return self.db_id
+
 
 class Album:
     def __init__(self, data: Dict[str, Any], net_req: bool = False):
@@ -152,6 +220,8 @@ class Album:
         self.contributors: List[int] = data["contributors"]
         self.artist: Contributor = data["artist"]
         self.track_count: int = data["track_count"]
+
+        self.db_id: Optional[int] = None
 
     @property
     def id3v24_release_date(self) -> str:
@@ -185,6 +255,30 @@ class Album:
 
         return data
 
+    def get_db_id(self, database: Db) -> int:
+        if self.db_id is not None:
+            return self.db_id
+        else:
+            return self.write_record(database)
+
+    def write_record(self, database: Db) -> int:
+        genre_db_ids = [genre.get_db_id(database) for genre in self.genres]
+        database.insert(
+            Insert.album,
+            (
+                self.id,
+                None,
+                self.artist.get_db_id(database),
+                str(self.contributors),
+                str(genre_db_ids),
+                self.duration,
+                self.release_date,
+                self.cover.get_db_id(database),
+            ),
+        )
+        self.db_id = cast(int, database.cursor.lastrowid)
+        return self.db_id
+
 
 class Genre:
     def __init__(self, data: Dict[str, Any], net_req: bool = False):
@@ -195,6 +289,8 @@ class Genre:
         self.name: str = data["name"]
         self.picture: Picture = data["picture"]
 
+        self.db_id: Optional[int] = None
+
     def _net_req_convert(self, data: dict) -> dict:
         genre_data = self._perform_request(Endpoints.genre(str(data["id"])))
         genre_data = cast(dict, genre_data)
@@ -202,3 +298,14 @@ class Genre:
         data["picture"] = Picture(genre_data, net_req=True, prefix="picture")
 
         return data
+
+    def get_db_id(self, database: Db) -> int:
+        if self.db_id is not None:
+            return self.db_id
+        else:
+            return self.write_record(database)
+
+    def write_record(self, database: Db) -> int:
+        database.insert(Insert.genre, (self.name, self.picture.get_db_id(database)))
+        self.db_id = cast(int, database.cursor.lastrowid)
+        return self.db_id
