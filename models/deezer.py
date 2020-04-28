@@ -1,6 +1,7 @@
 import datetime
 from typing import Any, Dict, List, Optional
 
+from endpoints import Endpoints
 from utils import dict_rename, requests_retry_session
 
 
@@ -130,7 +131,7 @@ class Picture:
 class Album:
     def __init__(self, data: Dict[str, Any], net_req: bool = False):
         if net_req:
-            self._net_req_convert(data)
+            data = self._net_req_convert(data)
 
         self.id: int = data["id"]
         self.title: str = data["title"]
@@ -167,8 +168,9 @@ class Album:
         cover_keys = ["cover", "cover_small", "cover_medium", "cover_big", "cover_xl"]
 
         data["contributors"] = [contrib_data["id"] for contrib_data in data["contributors"]]
-        data["genres"] = [Genre(genre_data) for genre_data in data["genres"]["data"]]
+        data["genres"] = [Genre(genre_data, net_req=True) for genre_data in data["genres"]["data"]]
         data["release_date"] = datetime.datetime.strptime(data["release_date"], "%Y-%m-%d")
+        data["artist"] = Contributor(data["artist"], net_req=True)
 
         cover_data = {}
         for key in cover_keys:
@@ -185,8 +187,18 @@ class Album:
 
 
 class Genre:
-    def __init__(self, data: Dict[str, Any]):
+    def __init__(self, data: Dict[str, Any], net_req: bool = False):
+        if net_req:
+            data = self._net_req_convert(data)
+
         self.id: int = data["id"]
         self.name: str = data["name"]
         self.picture: Picture = data["picture"]
 
+    def _net_req_convert(self, data: dict) -> dict:
+        genre_data = self._perform_request(Endpoints.genre(str(data["id"])))
+        genre_data = cast(dict, genre_data)
+
+        data["picture"] = Picture(genre_data, net_req=True, prefix="picture")
+
+        return data
