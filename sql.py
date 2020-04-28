@@ -22,8 +22,8 @@ class Select:
 class Create:
     chart = """CREATE TABLE "chart" (
         "chart_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-        "chart_name"    TEXT NOT NULL,
-        "chart_url"    TEXT NOT NULL,
+        "name"    TEXT NOT NULL,
+        "url"    TEXT NOT NULL,
         "date"    TIMESTAMP NOT NULL
     )"""
 
@@ -60,7 +60,7 @@ class Create:
     )"""
 
     chart_track = """CREATE TABLE "chart_track" (
-        "chart_song_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+        "chart_track_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "chart_id"    INTEGER NOT NULL,
         "track_id"    INTEGER,
         "position"    INTEGER,
@@ -76,8 +76,8 @@ class Create:
         "spotify_id"    TEXT UNIQUE,
         "name"    TEXT,
         "deezer_fans"    INTEGER,
-        "photo"    INTEGER UNIQUE,
-        FOREIGN KEY("photo") REFERENCES "image_file"("image_file_id")
+        "photo_id"    INTEGER UNIQUE,
+        FOREIGN KEY("photo_id") REFERENCES "photo"("photo_id")
     )"""
 
     album = """CREATE TABLE "album" (
