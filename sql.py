@@ -11,12 +11,13 @@ class Insert:
     )
     """
 
-    image = """INSERT INTO "image_file" (
+    image_file = """INSERT INTO "image_file" (
             image_file_id,
             filepath,
             width,
-            height)
-        VALUES (null, ?, ?, ?)
+            height,
+            url)
+        VALUES (null, ?, ?, ?, ?)
     )
     """
 
@@ -139,11 +140,12 @@ class Create:
         "date"    TIMESTAMP NOT NULL
     )"""
 
-    image = """CREATE TABLE "image_file" (
+    image_file = """CREATE TABLE "image_file" (
         "image_file_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "filepath"    TEXT NOT NULL UNIQUE,
         "width"    INTEGER NOT NULL,
-        "height"    INTEGER NOT NULL
+        "height"    INTEGER NOT NULL,
+        "url"    INTEGER NOT NULL
     )"""
 
     audio_file = """CREATE TABLE "audio_file" (
