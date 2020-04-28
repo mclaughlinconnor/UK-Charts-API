@@ -240,8 +240,8 @@ class Album:
         data["contributors"] = [contrib_data["id"] for contrib_data in data["contributors"]]
         data["genres"] = [Genre(genre_data, net_req=True) for genre_data in data["genres"]["data"]]
         data["release_date"] = datetime.datetime.strptime(data["release_date"], "%Y-%m-%d")
-        data["artist"] = Contributor(data["artist"], net_req=True)
 
+        # Note, this always runs, even when there already is complete data.
         artist_data = self._perform_request(Endpoints.contributor(data["artist"]["id"]))
 
         data["artist"] = Contributor(artist_data, net_req=True)
