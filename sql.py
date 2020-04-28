@@ -59,7 +59,7 @@ class Insert:
             name,
             deezer_fans,
             photo_id)
-        VALUES (null, ?, ?, ?, ?)
+        VALUES (null, ?, ?, ?, ?, ?)
     """
 
     album = """INSERT INTO "album" (
