@@ -27,7 +27,7 @@ class Db:
 
     def create_tables(self) -> None:
         self.cursor.execute(Create.chart)
-        self.cursor.execute(Create.image)
+        self.cursor.execute(Create.image_file)
         self.cursor.execute(Create.audio_file)
         self.cursor.execute(Create.photo)
         self.cursor.execute(Create.chart_track)
