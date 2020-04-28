@@ -1,4 +1,5 @@
 import sqlite3
+from sql import Create
 from typing import Tuple
 
 
@@ -22,3 +23,15 @@ class Db:
 
     def close(self) -> None:
         self.conn.close()
+
+    def create_tables(self) -> None:
+        self.cursor.execute(Create.chart)
+        self.cursor.execute(Create.image)
+        self.cursor.execute(Create.audio_file)
+        self.cursor.execute(Create.photo)
+        self.cursor.execute(Create.chart_track)
+        self.cursor.execute(Create.contributor)
+        self.cursor.execute(Create.album)
+        self.cursor.execute(Create.genre)
+        self.cursor.execute(Create.track)
+        self.cursor.execute(Create.track_metadata)
