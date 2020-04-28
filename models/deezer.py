@@ -27,7 +27,7 @@ class Track:
         self.gain: float = data["gain"]
         self.contributors: List[int] = data["contributors"]
         self.artist: Contributor = data["artist"]
-        self.album: str = data["album"]
+        self.album: Album = data["album"]
         self.spotify_url: Optional[str] = spotify_url
 
         if "title_version" in data:
