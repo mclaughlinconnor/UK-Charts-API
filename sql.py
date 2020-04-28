@@ -2,7 +2,119 @@ class Insert:
     """Insert statements for all tables will eventually be included here
     """
 
-    pass
+    chart = """INSERT INTO "chart" (
+            id,
+            name,
+            url,
+            date)
+        VALUES (null, ?, ?, ?)
+    )
+    """
+
+    image = """INSERT INTO "image_file" (
+            image_file_id,
+            filepath,
+            width,
+            height)
+        VALUES (null, ?, ?, ?)
+    )
+    """
+
+    audio_file = """INSERT INTO "audio_file" (
+            audio_file_id,
+            filepath,
+            format,
+            bitrate,
+            smaple_rate,
+            bits,
+            channels,
+            download_time)
+        VALUES (null, ?, ?, ?, ?, ?, ?, ?)
+    )
+    """
+
+    photo = """INSERT INTO "photo" (
+            photo_id,
+            thumbnail_id,
+            small_id,
+            medium_id,
+            big_id,
+            xl_id)
+        VALUES (null, ?, ?, ?, ?, ?)
+    )
+    """
+
+    chart_track = """INSERT INTO "chart_track" (
+            chart_track_id,
+            chart_id,
+            track_id,
+            position,
+            last_week,
+            peak)
+        VALUES (null, ?, ?, ?, ?, ?, ?)
+    )
+    """
+
+    contributor = """INSERT INTO "contributor" (
+            contributor_id,
+            deezer_id,
+            spotify_id,
+            name,
+            deezer_fans,
+            photo_id)
+        VALUES (null, ?, ?, ?, ?)
+    )
+    """
+
+    album = """INSERT INTO "album" (
+            album_id,
+            deezer_id,
+            spotify_id,
+            primary_contributor,
+            contributors,
+            genre,
+            duration,
+            release_date,
+            cover)
+        VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?)
+    )
+    """
+
+    genre = """INSERT INTO "genre" (
+            genre_id,
+            name,
+            photo
+        VALUES (null, ?, ?)
+    )
+    """
+
+    track = """INSERT INTO "track" (
+            track_id,
+            isrc,
+            contributor_id,
+            album_id,
+            audio_file_id
+        VALUES (null, ?, ?, ?, ?)
+    )
+    """
+
+    track_metadata = """INSERT INTO "track_metadata" (
+            isrc,
+            deezer_id,
+            spotify_id,
+            title,
+            short_title,
+            duration,
+            track_number,
+            deezer_rank,
+            explicit,
+            bpm,
+            deezer_preview,
+            lyrics,
+            label
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    )
+    """
 
 
 class Update:
