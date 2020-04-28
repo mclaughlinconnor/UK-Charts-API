@@ -161,7 +161,7 @@ class Picture:
 
     @property
     def _url_prefix(self) -> str:
-        return "/".join(self.xl.split("/")[0:-1])
+        return "/".join(self.xl["url"].split("/")[0:-1])
 
     def cover_art(self, size: int) -> bytes:
         """ Retrieves the cover art/playlist image from the official API,
