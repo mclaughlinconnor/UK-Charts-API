@@ -123,6 +123,85 @@ class Select:
     pass
 
 
+class Exists:
+    chart = """
+        SELECT *
+        FROM chart
+        WHERE
+            name = ? and
+            url = ? and
+            date = ?
+    """
+
+    image_file = """
+        SELECT *
+        FROM image_file
+        WHERE filepath = ?
+    """
+
+    audio_file = """
+        SELECT *
+        FROM  audio_file
+        WHERE filepath = ?
+    """
+
+    photo = """
+        SELECT *
+        FROM photo
+        WHERE
+            thumbnail_id = ? or
+            small_id = ? or
+            medium_id = ? or
+            big_id = ? or
+            xl_id = ?
+    """
+
+    chart_track = """
+        SELECT *
+        FROM chart_track
+        WHERE
+            chart_id = ? and
+            track_id = ?
+    """
+
+    contributor = """
+        SELECT *
+        FROM contributor
+        WHERE
+            (deezer_id = ? or spotify_id = ?) and
+            name = ?
+    """
+
+    album = """
+        SELECT *
+        FROM album
+        WHERE
+            (deezer_id = ? or spotify_id = ?) and
+            name = ? and
+            primary_contributor = ?
+    """
+
+    genre = """
+        SELECT *
+        FROM genre
+        WHERE name = ?
+    """
+
+    track = """
+        SELECT *
+        FROM track
+        WHERE
+            isrc = ? and
+            audio_file_id = ?
+    """
+
+    track_metadata = """
+        SELECT *
+        FROM track_metadata
+        WHERE isrc = ?
+    """
+
+
 class Create:
     chart = """CREATE TABLE IF NOT EXISTS "chart" (
         "chart_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,

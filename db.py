@@ -22,6 +22,13 @@ class Db:
     def update(self, sql: str, parameters: Tuple) -> None:
         self.cursor.execute(sql, parameters)
 
+    def exists(self, sql: str, parameters: Tuple) -> bool:
+        data = self.cursor.execute(sql, parameters)
+        if data.fetchone():
+            return True
+        else:
+            return False
+
     def close(self) -> None:
         self.conn.close()
 
