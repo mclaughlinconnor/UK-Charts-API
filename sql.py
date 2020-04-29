@@ -280,7 +280,7 @@ class Create:
 
     genre = """CREATE TABLE IF NOT EXISTS "genre" (
         "genre_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-        "name"    TEXT,
+        "name"    TEXT UNIQUE,
         "photo"    INTEGER,
         FOREIGN KEY("photo") REFERENCES "genre"("genre_id")
     )"""
