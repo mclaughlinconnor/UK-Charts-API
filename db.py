@@ -1,6 +1,6 @@
 import sqlite3
 from sql import Create
-from typing import Tuple
+from typing import Tuple, Optional
 
 
 class Db:
@@ -22,12 +22,13 @@ class Db:
     def update(self, sql: str, parameters: Tuple) -> None:
         self.cursor.execute(sql, parameters)
 
-    def exists(self, sql: str, parameters: Tuple) -> bool:
+    def exists(self, sql: str, parameters: Tuple) -> Optional[int]:
         data = self.cursor.execute(sql, parameters)
-        if data.fetchone():
-            return True
+        record = data.fetchone()
+        if record:
+            return record[0]  # The 0th field is always the record ID
         else:
-            return False
+            return None
 
     def close(self) -> None:
         self.conn.close()
