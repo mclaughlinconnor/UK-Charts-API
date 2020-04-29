@@ -266,6 +266,7 @@ class Create:
         "album_id"    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
         "deezer_id"    INTEGER UNIQUE,
         "spotify_id"    TEXT UNIQUE,
+        "title"    TEXT,
         "primary_contributor"    INTEGER,
         "contributors"    TEXT,
         "genre"    INTEGER,
