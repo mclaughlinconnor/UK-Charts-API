@@ -190,9 +190,7 @@ class Exists:
     track = """
         SELECT *
         FROM track
-        WHERE
-            isrc = ? and
-            audio_file_id = ?
+        WHERE isrc = ?
     """
 
     track_metadata = """
@@ -290,7 +288,7 @@ class Create:
         "isrc"    TEXT NOT NULL UNIQUE,
         "contributor_id"    INTEGER NOT NULL,
         "album_id"    INTEGER NOT NULL,
-        "audio_file_id"    INTEGER UNIQUE,
+        "audio_file_id"    INTEGER,
         FOREIGN KEY("contributor_id") REFERENCES "contributor"("contributor_id"),
         FOREIGN KEY("album_id") REFERENCES "album"("album_id"),
         FOREIGN KEY("isrc") REFERENCES "track_metadata"("isrc")
