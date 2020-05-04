@@ -270,7 +270,7 @@ class Create:
         "genre"    INTEGER,
         "duration"    INTEGER,
         "release_date"    TIMESTAMP,
-        "cover"    INTEGER UNIQUE,
+        "cover"    INTEGER,
         FOREIGN KEY("cover") REFERENCES "photo"("photo_id"),
         FOREIGN KEY("primary_contributor") REFERENCES "contributor"("contributor_id")
     )"""
