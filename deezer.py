@@ -133,7 +133,7 @@ class Deezer:
                 self._track_data = deezer.Track(data, self.spotify_url, net_req=True, skip_children=True)
         return self._track_data
 
-    track = property(_get_track)
+    track: deezer.Track = property(_get_track)
 
     @property
     def album(self) -> deezer.Album:
