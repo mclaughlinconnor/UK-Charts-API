@@ -175,7 +175,7 @@ class Exists:
         FROM album
         WHERE
             (deezer_id = ? or spotify_id = ?) and
-            name = ? and
+            title = ? and
             primary_contributor = ?
     """
 
