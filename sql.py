@@ -102,9 +102,7 @@ class Insert:
             deezer_rank,
             explicit,
             bpm,
-            deezer_preview,
-            lyrics,
-            label)
+            lyrics)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
@@ -306,8 +304,6 @@ class Create:
         "deezer_rank"    INTEGER,
         "explicit"    INTEGER NOT NULL CHECK(explicit = 1 or explicit = 0),
         "bpm"    REAL,
-        "deezer_preview"    TEXT,
         "lyrics"    TEXT,
-        "label"    TEXT,
         PRIMARY KEY("isrc")
     )"""
