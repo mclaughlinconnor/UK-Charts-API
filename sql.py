@@ -256,7 +256,7 @@ class Create:
         "spotify_id"    TEXT UNIQUE,
         "name"    TEXT,
         "deezer_fans"    INTEGER,
-        "photo_id"    INTEGER UNIQUE,
+        "photo_id"    INTEGER,
         FOREIGN KEY("photo_id") REFERENCES "photo"("photo_id")
     )"""
 
