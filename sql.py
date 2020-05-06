@@ -6,9 +6,8 @@ class Insert:
             chart_id,
             name,
             url,
-            date
+            date)
         VALUES (null, ?, ?, ?)
-    )
     """
 
     image_file = """INSERT INTO "image_file" (
