@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, cast
 
 from db import Db
 from endpoints import Endpoints
-from sql import Insert
+from sql import Exists, Insert
 from utils import dict_rename, requests_retry_session
 
 
@@ -71,10 +71,14 @@ class Track:
             return self.write_record(database)
 
     def write_record(self, database: Db) -> int:
-        database.insert(
-            Insert.track, (self.isrc, self.artist.get_db_id(database), self.album.get_db_id(database), None)
-        )
-        self.db_id = cast(int, database.cursor.lastrowid)
+        existing_id = database.exists(Exists.track, (self.isrc,))
+        if existing_id:
+            self.db_id = existing_id
+        else:
+            database.insert(
+                Insert.track, (self.isrc, self.artist.get_db_id(database), self.album.get_db_id(database), None)
+            )
+            self.db_id = cast(int, database.cursor.lastrowid)
         return self.db_id
 
 
@@ -114,8 +118,12 @@ class Contributor:
             return self.write_record(database)
 
     def write_record(self, database: Db) -> int:
-        database.insert(Insert.contributor, (self.id, None, self.name, self.fans, self.picture.get_db_id(database)))
-        self.db_id = cast(int, database.cursor.lastrowid)
+        existing_id = database.exists(Exists.contributor, (self.id, None, self.name))
+        if existing_id:
+            self.db_id = existing_id
+        else:
+            database.insert(Insert.contributor, (self.id, None, self.name, self.fans, self.picture.get_db_id(database)))
+            self.db_id = cast(int, database.cursor.lastrowid)
         return self.db_id
 
 
@@ -131,16 +139,21 @@ class Picture:
         self.xl: dict = {}
 
         self.thumbnail["size"] = [120, 120]
-        self.small["size"] = [56, 56]
-        self.medium["size"] = [250, 250]
-        self.big["size"] = [500, 500]
-        self.xl["size"] = [1000, 1000]
 
         self.thumbnail["url"] = data["thumbnail"]
-        self.small["url"] = data["small"]
-        self.medium["url"] = data["medium"]
-        self.big["url"] = data["big"]
-        self.xl["url"] = data["xl"]
+
+        if all(size in data.keys() for size in ["small", "medium", "big", "xl"]):
+            self.small["size"] = [56, 56]
+            self.small["url"] = data["small"]
+
+            self.medium["url"] = data["medium"]
+            self.medium["size"] = [250, 250]
+
+            self.big["url"] = data["big"]
+            self.big["size"] = [500, 500]
+
+            self.xl["url"] = data["xl"]
+            self.xl["size"] = [1000, 1000]
 
         self.db_id: Optional[int] = None
 
@@ -154,9 +167,12 @@ class Picture:
         }
 
         picture_data = {}
-        for original, new in keys.items():
-            picture_data[new] = data[original]
 
+        try:
+            for original, new in keys.items():
+                picture_data[new] = data[original]
+        except KeyError:  # Only a single image
+            return picture_data
         return picture_data
 
     @property
@@ -178,21 +194,35 @@ class Picture:
             return self.write_record(database)
 
     def _write_image_file_record(self, database: Db, image: dict) -> int:
-        database.insert(Insert.image_file, (image["url"], image["size"][0], image["size"][1], True))
-        return database.cursor.lastrowid
+        existing_id = database.exists(Exists.image_file, (image["url"],))
+        if existing_id:
+            return existing_id
+        else:
+            database.insert(Insert.image_file, (image["url"], image["size"][0], image["size"][1], True))
+            return database.cursor.lastrowid
 
     def write_image_file(self, database: Db) -> None:
-        images = [self.thumbnail, self.small, self.medium, self.big, self.xl]
+        if all([self.xl == {}, self.big == {}, self.medium == {}, self.small == {}]):
+            images = [self.thumbnail]
+        else:
+            images = [self.thumbnail, self.small, self.medium, self.big, self.xl]
         for i, image in enumerate(images):
             images[i]["db_id"] = self._write_image_file_record(database, image)
 
     def write_record(self, database: Db) -> int:
-        self.write_image_file(database)
-        database.insert(
-            Insert.photo,
-            (self.thumbnail["db_id"], self.small["db_id"], self.medium["db_id"], self.big["db_id"], self.xl["db_id"]),
-        )
-        self.db_id = cast(int, database.cursor.lastrowid)
+        if all([self.xl == {}, self.big == {}, self.medium == {}, self.small == {}]):
+            image_ids = (self._write_image_file_record(database, self.thumbnail), None, None, None, None)
+            existing_id = database.exists(Exists.photo, image_ids)
+        else:
+            images = [self.thumbnail, self.small, self.medium, self.big, self.xl]
+            image_ids = tuple(self._write_image_file_record(database, image) for image in images)
+            existing_id = database.exists(Exists.photo, image_ids)
+        if existing_id:
+            self.db_id = existing_id
+        else:
+            self.write_image_file(database)
+            database.insert(Insert.photo, image_ids)
+            self.db_id = cast(int, database.cursor.lastrowid)
         return self.db_id
 
 
@@ -275,21 +305,26 @@ class Album:
             return self.write_record(database)
 
     def write_record(self, database: Db) -> int:
-        genre_db_ids = [genre.get_db_id(database) for genre in self.genres]
-        database.insert(
-            Insert.album,
-            (
-                self.id,
-                None,
-                self.artist.get_db_id(database),
-                str(self.contributors),
-                str(genre_db_ids),
-                self.duration,
-                self.release_date,
-                self.cover.get_db_id(database),
-            ),
-        )
-        self.db_id = cast(int, database.cursor.lastrowid)
+        existing_id = database.exists(Exists.album, (self.id, None, self.title, self.artist.get_db_id(database)))
+        if existing_id:
+            self.db_id = existing_id
+        else:
+            genre_db_ids = [genre.get_db_id(database) for genre in self.genres]
+            database.insert(
+                Insert.album,
+                (
+                    self.id,
+                    None,
+                    self.title,
+                    self.artist.get_db_id(database),
+                    str(self.contributors),
+                    str(genre_db_ids),
+                    self.duration,
+                    self.release_date,
+                    self.cover.get_db_id(database),
+                ),
+            )
+            self.db_id = cast(int, database.cursor.lastrowid)
         return self.db_id
 
 
@@ -328,6 +363,10 @@ class Genre:
             return self.write_record(database)
 
     def write_record(self, database: Db) -> int:
-        database.insert(Insert.genre, (self.name, self.picture.get_db_id(database)))
-        self.db_id = cast(int, database.cursor.lastrowid)
+        existing_id = database.exists(Exists.genre, (self.name,))
+        if existing_id:
+            self.db_id = existing_id
+        else:
+            database.insert(Insert.genre, (self.name, self.picture.get_db_id(database)))
+            self.db_id = cast(int, database.cursor.lastrowid)
         return self.db_id
