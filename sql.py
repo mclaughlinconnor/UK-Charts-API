@@ -63,13 +63,14 @@ class Insert:
             album_id,
             deezer_id,
             spotify_id,
+            title,
             primary_contributor,
             contributors,
             genre,
             duration,
             release_date,
             cover)
-        VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     genre = """INSERT INTO "genre" (
@@ -100,7 +101,7 @@ class Insert:
             explicit,
             bpm,
             lyrics)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
 
