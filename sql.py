@@ -45,10 +45,8 @@ class Insert:
             chart_track_id,
             chart_id,
             track_id,
-            position,
-            last_week,
-            peak)
-        VALUES (null, ?, ?, ?, ?, ?, ?)
+            position)
+        VALUES (null, ?, ?, ?)
     """
 
     contributor = """INSERT INTO "contributor" (
@@ -243,8 +241,6 @@ class Create:
         "chart_id"    INTEGER NOT NULL,
         "track_id"    INTEGER,
         "position"    INTEGER,
-        "last_week"    INTEGER,
-        "peak"    INTEGER,
         FOREIGN KEY("chart_id") REFERENCES "chart"("chart_id"),
         FOREIGN KEY("track_id") REFERENCES "track"("track_id")
     )"""
