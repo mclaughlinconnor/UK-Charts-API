@@ -1,9 +1,11 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, cast
 
 import requests
 
+from db import Db
 from endpoints import Endpoints
 from models import deezer
+from sql import Insert, Exists
 from utils import requests_retry_session, replace_illegals
 
 
@@ -160,6 +162,34 @@ class Deezer:
             return self.lyrics.synced_lyrics()
         else:
             return self.lyrics.unsynced_lyrics()
+
+    def write_record(self, database: Db) -> None:
+        self.track.write_record(database)
+        self.write_metadata(database)
+
+    def write_metadata(self, database: Db) -> int:
+        existing_id = database.exists(Exists.track_metadata, (self.track.isrc,))
+        if existing_id:
+            db_id = existing_id
+        else:
+            database.insert(
+                Insert.track_metadata,
+                (
+                    self.track.isrc,
+                    self.track_id,
+                    self.track.spotify_url,
+                    self.track.title,
+                    self.track.title_short,
+                    self.track.duration,
+                    self.track.track_position,
+                    self.track.rank,
+                    self.track.explicit_lyrics,
+                    self.track.bpm,
+                    "\n".join(self.lyrics.unsynced_lyrics()),
+                ),
+            )
+            db_id = cast(int, database.cursor.lastrowid)
+        return db_id
 
 
 class Lyrics:
