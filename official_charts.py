@@ -5,9 +5,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 import bs4
 
-from db import Db
 from models import chart
-from sql import Insert
 
 
 class Scraper:
@@ -17,9 +15,6 @@ class Scraper:
         self.chart_id = self._chart_id_from_type(self.chart_title)
         self.chart_date = date.strftime("%Y%m%d")
         self.chart_url = self._chart_url(self.chart_title, self.chart_date, self.chart_id)
-
-    def write_record(self, database: Db) -> None:
-        database.insert(Insert.CHARTDATA, ())
 
     def scrape(self) -> Generator[chart.ChartData, None, None]:
         soup: bs = self._download_webpage(self.chart_url)
@@ -117,6 +112,8 @@ class Scraper:
         row_data["label"] = row.find(class_="label").get_text()
         row_data["peak"] = row.find_all("td", recursive=False)[3].get_text()
         row_data["woc"] = row.find_all("td", recursive=False)[4].get_text()
+        row_data["position"] = row.find(class_="position").get_text()
+        row_data["chart_id"] = self.chart_id
 
         return chart.ChartSong(row_data)
 
@@ -127,7 +124,6 @@ class Scraper:
         row_data["chart_id"] = self.chart_id
         row_data["chart_title"] = self.chart_title
         row_data["chart_song"] = chart_song
-        row_data["position"] = row.find(class_="position").get_text()
         row_data["date"] = self.chart_date
         row_data["chart_url"] = self.chart_url
         row_data["last_week"] = row.find(class_="last-week").get_text().strip()

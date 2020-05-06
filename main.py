@@ -1,8 +1,10 @@
 import logging
 import multiprocessing
 import signal
+from typing import Optional
 
 import utils
+from db import Db
 from models import chart, exception
 from official_charts import Scraper
 
@@ -12,7 +14,7 @@ except ImportError:
     raise NotImplementedError("downloader.py not found. Add to support downloading.")
 
 
-MULTIPROCESS = False
+MULTIPROCESS = True
 TIMEOUT = 20
 
 
@@ -22,34 +24,51 @@ def timeout_handler(signum: int, frame) -> None:  # type: ignore
     raise exception.TimeoutException
 
 
-def worker(chart_item: chart.ChartData) -> None:
+def worker(chart_item: chart.ChartData) -> Optional[tuple]:
     signal.alarm(TIMEOUT)
     logging.info(f"{chart_item.chart_song.title} started.")
     try:
-        d = chart_item.chart_song.to_deezer()
-        dl = download.Download(d.track_id, f"{d.generate_filepath('/home/connor/UK Charts API Refactor/output')}", d)
-        dl.download()
+        deezer = chart_item.chart_song.to_deezer()
+        track_download = download.Download(
+            deezer.track_id, f"{deezer.generate_filepath('/home/connor/UK Charts API Refactor/output')}", deezer
+        )
+        track_download.download()
+
+        return deezer, chart_item
     except ValueError:
         logging.error(f"{chart_item.chart_song.title} failed.")
-        # Logic for failed to_deezer calls here.
+        signal.alarm(0)
+        return None, None
     except exception.TimeoutException:
         logging.warning(f"{chart_item.chart_song.title} timed out.")
-    finally:
         signal.alarm(0)
-        return
+        return None, None
 
 
 if __name__ == "__main__":
     signal.signal(signal.SIGALRM, timeout_handler)
     logging.basicConfig(level=logging.WARN)
+
+    database = Db("data/data.db")
+
     for year in range(1954, 2020):
         dates = utils.generate_dates(year)
         for date in dates:
-            s = Scraper(date, "singles-chart")
+            scraper = Scraper(date, "singles-chart")
             if MULTIPROCESS:
                 pool = multiprocessing.Pool()
-                pool.map(worker, s.scrape())
+                for deezer, chart_item in pool.imap_unordered(worker, scraper.scrape()):
+                    if any([deezer is None, chart_item is None]):
+                        continue
+                    deezer.write_record(database)
+                    chart_item.write_record(database)
+                    database.commit()
                 pool.close()
             else:
-                for chart_item in s.scrape():
-                    worker(chart_item)
+                for chart_item in scraper.scrape():
+                    deezer, chart_item = worker(chart_item)
+                    if any([deezer is None, chart_item is None]):
+                        continue
+                    deezer.write_record(database)
+                    chart_item.write_record(database)
+                    database.commit()
