@@ -3,7 +3,7 @@ class Insert:
     """
 
     chart = """INSERT INTO "chart" (
-            id,
+            chart_id,
             name,
             url,
             date
