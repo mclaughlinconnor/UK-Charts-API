@@ -134,11 +134,13 @@ dmypy.json
 # VSCode
 .vscode/
 
-# Databases
+# Databases and output
 *.db
 *.db*
 *.sql
 *.csv
+*.mp3
+*.flac
 
 # Black config
 .black_config
