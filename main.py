@@ -15,7 +15,7 @@ except ImportError:
 
 
 MULTIPROCESS = True
-TIMEOUT = 20
+TIMEOUT = 30
 
 
 def timeout_handler(signum: int, frame) -> None:  # type: ignore
@@ -30,7 +30,7 @@ def worker(chart_item: chart.ChartData) -> Optional[tuple]:
     try:
         deezer = chart_item.chart_song.to_deezer()
         track_download = download.Download(
-            deezer.track_id, f"{deezer.generate_filepath('/home/connor/UK Charts API Refactor/output')}", deezer
+            deezer.track_id, f"{deezer.generate_filepath('/home/connor/Python/UK Charts API Refactor/output')}", deezer
         )
         track_download.download()
 
