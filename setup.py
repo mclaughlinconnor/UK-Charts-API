@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="uk_charts_api",
-    version="1.0",
+    version="1.0.1",
     author="Connor McLaughlin",
     description="A small example package",
     long_description=long_description,
