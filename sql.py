@@ -24,7 +24,7 @@ class Insert:
             filepath,
             format,
             bitrate,
-            smaple_rate,
+            sample_rate,
             bits,
             channels,
             download_time)
