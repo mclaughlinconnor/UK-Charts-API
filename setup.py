@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="UK-Charts-API-cmclaughlin", # Replace with your own username
+    name="uk_charts_api",
     version="1.0",
     author="Connor McLaughlin",
     description="A small example package",
