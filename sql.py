@@ -106,10 +106,14 @@ class Insert:
 
 
 class Update:
-    """All of the required update statements will be included here
+    """ Any update queries that can be performed on the database
     """
 
-    pass
+    set_track_audio_file = """
+        UPDATE track
+        SET audio_file_id = ?
+        WHERE track_id = ?
+    """
 
 
 class Select:

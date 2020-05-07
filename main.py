@@ -14,8 +14,8 @@ except ImportError:
     raise NotImplementedError("downloader.py not found. Add to support downloading.")
 
 
-MULTIPROCESS = True
-TIMEOUT = 30
+MULTIPROCESS = False
+TIMEOUT = 45
 
 
 def timeout_handler(signum: int, frame) -> None:  # type: ignore
@@ -34,16 +34,14 @@ def worker(chart_item: chart.ChartData) -> Optional[tuple]:
         )
         track_download.download()
 
-        return deezer, chart_item
+        return deezer, chart_item, track_download
     except ValueError:
         logging.error(f"{chart_item.chart_song.title} failed.")
-        signal.alarm(0)
-        return None, None
     except exception.TimeoutException:
         logging.warning(f"{chart_item.chart_song.title} timed out.")
+    finally:
         signal.alarm(0)
-        return None, None
-
+        return None, None, None
 
 if __name__ == "__main__":
     signal.signal(signal.SIGALRM, timeout_handler)
@@ -57,18 +55,22 @@ if __name__ == "__main__":
             scraper = Scraper(date, "singles-chart")
             if MULTIPROCESS:
                 pool = multiprocessing.Pool()
-                for deezer, chart_item in pool.imap_unordered(worker, scraper.scrape()):
+                for deezer, chart_item, track_download in pool.imap_unordered(worker, scraper.scrape()):
                     if any([deezer is None, chart_item is None]):
                         continue
                     deezer.write_record(database)
                     chart_item.write_record(database)
+                    if track_download is not None:
+                        track_download.write_record(database)
                     database.commit()
                 pool.close()
             else:
                 for chart_item in scraper.scrape():
-                    deezer, chart_item = worker(chart_item)
+                    deezer, chart_item, track_download = worker(chart_item)
                     if any([deezer is None, chart_item is None]):
                         continue
                     deezer.write_record(database)
                     chart_item.write_record(database)
+                    if track_download is not None:
+                        track_download.write_record(database, deezer.track.get_db_id(database))
                     database.commit()
